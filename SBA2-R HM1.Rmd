@@ -1,0 +1,103 @@
+---
+title: "SBA2- HW1"
+author: "Chatzimoschou Angeliki"
+date: "2016 M04 25"
+output: html_document
+---
+
+## Question 1
+```{r}
+library(AER)
+library(COUNT)
+
+data("PhDPublications")
+View(PhDPublications)
+str(PhDPublications)
+
+
+Poisson_model <- glm(articles~.,data = PhDPublications, family = "poisson")
+summary(Poisson_model)
+deviance(Poisson_model)
+str(Poisson_model)
+```
+
+##Question 2
+```{r}
+DevOverDF <- function(x){
+   (deviance(x)/x$df.residual)
+}
+```
+
+## Question 3
+```{r}
+DevOverDF(Poisson_model)
+```
+Since DevOverDF(Poisson_model)= 1.797988 > 1, we have overdispersion in our model.
+
+## Question 4
+```{r}
+library(qcc)
+qcc.overdispersion.test(PhDPublications$articles,type="poisson")
+```
+
+## Question 5
+Since p-value=0 < 0.05, we reject Ho: no overdispersion.
+In conclusion, there is overdispersion in our model.
+
+## Question 6
+```{r}
+Quasi_Poisson_model <- glm(articles~.,data = PhDPublications, family = "quasipoisson")
+summary(Poisson_model)
+summary(Quasi_Poisson_model)
+```
+
+## Question 7
+Yes for a 95% CI both models suggest the same input features related to response variable.
+
+## Question 8
+```{r}
+set.seed(666)
+x1 <- runif(300, min=0, max=1)
+
+set.seed(999)
+x2 <- runif(300, min=0, max=1)
+
+set.seed(1985)
+x3 <- runif(300, min=0, max=1)
+
+ysum <- 2*x1 + 5.7*x2 - 7.8*x3
+
+set.seed(1988)
+y<-rpois(300, exp(ysum))
+
+my_df <- as.data.frame(cbind(x1,x2,x3,y))
+
+my_Poisson1 <- glm(y~. ,family = 'poisson', data = my_df)
+my_Poisson2 <- glm(y ~ x1 + x3 ,family = 'poisson', data = my_df)
+
+DevOverDF(my_Poisson1)
+DevOverDF(my_Poisson2)
+```
+In my_Poisson1 model, overdispersion equals 0.81 < 1, so there is no overdispersion in the model.
+In my_Poisson2 model, overdispersion equals 30.39 > 1, so there is overdispersion in the model.
+
+## Question 9
+```{r}
+library(MASS)
+NB_model <- glm.nb(articles~.,data = PhDPublications)
+```
+
+## Question 10
+```{r}
+AIC(Poisson_model)
+AIC(NB_model)
+```
+In general we prefer the model with the lowest AIC value. 
+In our case that would be the Neg. Binomial model: AIC_Poisson_model = 3314.113 < AIC_NB_model= 3135.917
+
+## Question 11
+```{r}
+BIC(Poisson_model)
+BIC(NB_model)
+```
+We reach the same results as in Question 10, since BIC works the same way as AIC.
